@@ -98,7 +98,7 @@ public class NeuralNetwork implements IFitnessGetter {
         nn.weights = this.weights.clone();
         for (int i = 0; i < nn.weights.length; i++) {
             if (random.nextFloat() < genes) {
-                nn.weights[i] = (((nn.weights[i] + 1f) / 2f * sizeOfMutation) % 1) * 2f - 1f;
+                nn.weights[i] = random.nextFloat() * 2f - 1f;
             }
         }
         return nn;

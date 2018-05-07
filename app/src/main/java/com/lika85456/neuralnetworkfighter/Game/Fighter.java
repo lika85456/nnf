@@ -14,14 +14,17 @@ public class Fighter {
     public int id;
     private boolean hasLoadedBullet = true;
     private long shootTime;
+    public int killedTimes = 0;
+
+    public boolean dead = false;
 
     public Fighter(int id) {
         this.id = id;
     }
 
     public void move() {
-        x += Math.sin(angle * 2f * Math.PI) * velocity;
-        y += Math.cos(angle * 2f * Math.PI) * velocity;
+        x += Math.sin(angle * 2f * Math.PI) * velocity * 3f;
+        y += Math.cos(angle * 2f * Math.PI) * velocity * 3f;
         if (x > Game.size) x = Game.size;
         if (x < 0) x = 0;
         if (y > Game.size) y = Game.size;
@@ -49,8 +52,9 @@ public class Fighter {
     }
 
     public void setFoV(float fov) {
+        fov = ((fov + 1f) / 2f) * 45;
         if (fov > 45f) fov = 45f;
-        if (fov < 45f) fov = 1f;
+        if (fov < 1f) fov = 1f;
         this.FoV = fov;
     }
 

@@ -1,14 +1,23 @@
 package com.lika85456.neuralnetworkfighter;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
+    private static final String TAG = "SurfaceView";
+    private MySurfaceView surfaceView;
+
+    /**
+     * Called when the activity is first created.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        surfaceView = new MySurfaceView(this);
+        surfaceView.setWillNotDraw(false);
+        setContentView(surfaceView);
+
     }
 
 

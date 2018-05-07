@@ -5,13 +5,13 @@ import java.util.Random;
 
 public class Game {
     public static final int size = 500;
-    public static final long reloadingTime = 1000;
-    public static final int maxTurns = 1000;
-    public static final float bulletVelocity = 2f;
+    public static final long reloadingTime = 500;
+    public static final int maxTurns = 500;
+    public static final float bulletVelocity = 10f;
     public ArrayList<Bullet> bullets;
     public Fighter[] fighters;
     private int nPlayers;
-    private int turns = 0;
+    public int turns = 0;
     private Random random;
 
 
@@ -47,6 +47,7 @@ public class Game {
 
         //players moving
         for (int i = 0; i < nPlayers; i++) {
+            if (fighters[i].dead) continue;
             fighters[i].move();
         }
 
@@ -54,17 +55,22 @@ public class Game {
         for (int i = 0; i < bullets.size(); i++) {
             bullets.get(i).move();
             Fighter fighter = bullets.get(i).hitsSomebody(fighters);
-            if (fighter != null) {
+            if (fighter != null && fighter.dead == false) {
                 fighter.getHitted();
+                fighters[bullets.get(i).ownerId].killedTimes++;
+                if (fighter.hp <= 0)
+                    fighter.dead = true;
                 bullets.remove(i);
+                fighter = null;
+                continue;
             }
-            fighter = null;
+
 
             if (bullets.get(i).isOut()) bullets.remove(i);
         }
 
-        System.out.println("PlayerID: 0 - x: " + fighters[0].x + " y: " + fighters[0].y + "velocity: " + fighters[0].velocity);
-        System.out.println("PlayerID: 1 - x: " + fighters[1].x + " y: " + fighters[1].y + "velocity: " + fighters[1].velocity);
+        //System.out.println("PlayerID: 0 - x: " + fighters[0].x + " y: " + fighters[0].y + "velocity: " + fighters[0].velocity);
+        //System.out.println("PlayerID: 1 - x: " + fighters[1].x + " y: " + fighters[1].y + "velocity: " + fighters[1].velocity);
     }
 
     public void rotate(int playerId, boolean way, float strength) {
@@ -81,8 +87,8 @@ public class Game {
 
     public void setVelocity(int playerId, float velocity) {
         if (velocity > 1f) velocity = 1f;
-        if (velocity < 1f) velocity = 0f;
-        fighters[playerId].velocity = velocity;
+        if (velocity < 0f) velocity = 0f;
+        fighters[playerId].velocity = velocity * 5;
     }
 
     public void shoot(int playerId) {
@@ -102,16 +108,18 @@ public class Game {
     }
 
     public boolean isEnd() {
+        if (turns >= maxTurns) return true;
+        int numberOfAlive = 0;
         for (int i = 0; i < nPlayers; i++) {
-            if (fighters[i].hp <= 0) return true;
+            if (fighters[i].hp > 0) numberOfAlive++;
         }
-        return turns >= maxTurns;
+        return numberOfAlive < 2;
     }
 
     public float getFitness(int playerId) {
         Fighter fighter = fighters[playerId];
         float fitness = 0;
-        fitness += fighter.hp;
+        fitness += fighter.hp + fighter.killedTimes;
         return fitness;
     }
 
