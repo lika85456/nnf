@@ -34,7 +34,7 @@ public class Bullet {
             float x = fighter.x - this.x;
             float y = fighter.y - this.y;
             float total = x * x + y * y;
-            if (total < 100) return fighter;
+            if (total < 30 * 30) return fighter;
         }
         return null;
     }
