@@ -13,13 +13,16 @@ public class Fighter {
     public float velocity;
     public int id;
     private boolean hasLoadedBullet = true;
-    private long shootTime;
-    public int killedTimes = 0;
+    public int hitEnemy = 0;
+    public int shootWhileSeeingEnemy = 0;
+    public Game game;
 
     public boolean dead = false;
+    private int shootTurn;
 
-    public Fighter(int id) {
+    public Fighter(int id, Game game) {
         this.id = id;
+        this.game = game;
     }
 
     public void move() {
@@ -32,7 +35,7 @@ public class Fighter {
     }
 
     public void shooted() {
-        shootTime = System.currentTimeMillis();
+        shootTurn = game.turns;
         hasLoadedBullet = false;
     }
 
@@ -42,7 +45,7 @@ public class Fighter {
 
     public boolean canShoot() {
         if (hasLoadedBullet == false) {
-            if (System.currentTimeMillis() > shootTime + Game.reloadingTime) {
+            if (game.turns - shootTurn > 5) {
                 hasLoadedBullet = true;
                 return true;
             } else

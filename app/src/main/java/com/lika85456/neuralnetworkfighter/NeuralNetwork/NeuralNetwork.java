@@ -9,7 +9,7 @@ public class NeuralNetwork implements IFitnessGetter {
     private int outputs = 1;
     private Random random;
 
-    private float[] weights;
+    public float[] weights;
 
     public NeuralNetwork(int inputs, int outputs, int hiddenLayers, int hiddenNeurons) {
         this.inputs = inputs;
@@ -93,9 +93,11 @@ public class NeuralNetwork implements IFitnessGetter {
         return inputs + hiddenNeurons * hiddenLayers + outputs;
     }
 
-    public NeuralNetwork mutate(float genes, float sizeOfMutation) {
+    public NeuralNetwork mutate(float genes) {
         NeuralNetwork nn = new NeuralNetwork(inputs, outputs, hiddenLayers, hiddenNeurons);
-        nn.weights = this.weights.clone();
+        for (int i = 0; i < this.weights.length; i++) {
+            nn.weights[i] = this.weights[i];
+        }
         for (int i = 0; i < nn.weights.length; i++) {
             if (random.nextFloat() < genes) {
                 nn.weights[i] = random.nextFloat() * 2f - 1f;

@@ -14,19 +14,19 @@ import android.view.View;
 import com.lika85456.neuralnetworkfighter.Game.Bullet;
 import com.lika85456.neuralnetworkfighter.Game.Fighter;
 import com.lika85456.neuralnetworkfighter.Game.Game;
-import com.lika85456.neuralnetworkfighter.NeuralNetwork.NeuralNetwork;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MySurfaceView extends View {
     public static final int numberOfPlayers = 2;
     public Game game;
-    public ArrayList<NeuralNetwork> neuralNetworks;
+    public ArrayList<NeuralFighter> neuralNetworks;
     public Bitmap bitPlayer;
     public Bitmap bitBullet;
     public int generation = 0;
     private Paint paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
-
+    public NeuralFighter theBest = null;
 
     public MySurfaceView(Context context) {
         super(context);
@@ -46,14 +46,19 @@ public class MySurfaceView extends View {
     private void init() {
         paintLine.setStyle(Paint.Style.FILL_AND_STROKE);
         paintLine.setColor(0xFF2255FF);
-        neuralNetworks = new ArrayList<NeuralNetwork>();
-        this.game = new Game(numberOfPlayers);
-        for (int i = 0; i < numberOfPlayers; i++)
-            neuralNetworks.add(new NeuralNetwork(7, 6, 30, 30));
-
+        neuralNetworks = new ArrayList<NeuralFighter>();
 
         bitPlayer = drawableToBitmap(ResourcesCompat.getDrawable(getResources(), R.drawable.shooter, null));
         bitBullet = drawableToBitmap(ResourcesCompat.getDrawable(getResources(), R.drawable.bullet, null));
+
+        new Thread(new Runnable() {
+            public void run() {
+                Trainer trainer = new Trainer();
+                theBest = trainer.train(500);
+            }
+        }).start();
+
+
     }
 
     @Override
@@ -68,36 +73,29 @@ public class MySurfaceView extends View {
     public void onDraw(Canvas canvas) {
         //Log.d("RENDER","rendering");
         invalidate();
-        if (this.game == null) return;
-        render(canvas);
-        if (!game.isEnd()) {
-            for (int i = 0; i < numberOfPlayers; i++) {
-                if (game.fighters[i].dead == true) continue;
-                float[] output = neuralNetworks.get(i).getOutput(generateInput(game, 0));
-                proceedOutput(output, game, i);
+        if (theBest == null) return;
+        if (game == null) {
+            game = new Game(10);
+            for (int i = 0; i < 10; i++) {
+                NeuralFighter temp = theBest.mutate(0.1f);
+                temp.fighter = game.fighters[i];
+                neuralNetworks.add(temp);
             }
 
-            game.nextTurn();
         } else {
-            while (neuralNetworks.size() > numberOfPlayers / 2) {
-                NeuralNetwork minN = null;
-                float min = 100f;
-                for (int i = 0; i < neuralNetworks.size(); i++) {
-                    if (game.getFitness(i) < min) {
-                        min = game.getFitness(i);
-                        minN = neuralNetworks.get(i);
-                    }
+            if (!game.isEnd()) {
+                for (NeuralFighter neuralFighter : neuralNetworks) {
+                    neuralFighter.play(game);
                 }
-                neuralNetworks.remove(minN);
+                game.nextTurn();
+            } else {
+                theBest = Collections.max(neuralNetworks);
+                game = null;
             }
-            int size = neuralNetworks.size();
-            for (int i = 0; i < size; i++)
-                neuralNetworks.add(neuralNetworks.get(i).mutate(0.25f, 0.3f));
-            game = new Game(numberOfPlayers);
-            generation++;
+
         }
 
-
+        render(canvas);
     }
 
     public void render(Canvas canvas) {
@@ -148,17 +146,7 @@ public class MySurfaceView extends View {
 
     }
 
-    public void proceedOutput(float[] output, Game game, int playerId) {
-        if (output[0] > 0) game.shoot(playerId);
-        game.rotate(playerId, Math.max(output[1], output[2]) == output[1], (output[3] + 1f) / 2f);
-        game.setVelocity(playerId, output[4] > 0 ? 1f : 0f);
-        game.fighters[playerId].setFoV(output[5]);
-    }
 
-    public float[] generateInput(Game game, int playerId) {
-        Fighter f = game.fighters[playerId];
-        return new float[]{f.FoV / 45f, f.canSeeBullet(game.bullets) ? 1f : -1f, f.canSeeEnemy(game.fighters) ? 1f : -1f, f.canShoot() ? 1f : -1f, f.hp * 2 - 1f, f.x / Game.size, f.y / Game.size};
-    }
 }
 
 /*

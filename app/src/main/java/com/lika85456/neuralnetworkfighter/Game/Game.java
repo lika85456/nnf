@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class Game {
     public static final int size = 500;
-    public static final long reloadingTime = 500;
+    public static final long reloadingTime = 5;
     public static final int maxTurns = 500;
     public static final float bulletVelocity = 10f;
     public ArrayList<Bullet> bullets;
@@ -34,7 +34,7 @@ public class Game {
     }
 
     private Fighter generateFighter(int id) {
-        Fighter toRet = new Fighter(id);
+        Fighter toRet = new Fighter(id, this);
         toRet.x = random.nextInt(size);
         toRet.y = random.nextInt(size);
         toRet.angle = random.nextFloat();
@@ -57,7 +57,7 @@ public class Game {
             Fighter fighter = bullets.get(i).hitsSomebody(fighters);
             if (fighter != null && fighter.dead == false) {
                 fighter.getHitted();
-                fighters[bullets.get(i).ownerId].killedTimes++;
+                fighters[bullets.get(i).ownerId].hitEnemy++;
                 if (fighter.hp <= 0)
                     fighter.dead = true;
                 bullets.remove(i);
@@ -73,22 +73,19 @@ public class Game {
         //System.out.println("PlayerID: 1 - x: " + fighters[1].x + " y: " + fighters[1].y + "velocity: " + fighters[1].velocity);
     }
 
-    public void rotate(int playerId, boolean way, float strength) {
-        if (strength > 0.5f) strength = 0.5f;
-        if (strength < 0) strength = 0;
+    public void rotate(int playerId, boolean way) {
         Fighter fighter = fighters[playerId];
         if (way)
-            fighter.angle += strength;
+            fighter.angle += 0.1f;
         else
-            fighter.angle -= strength;
+            fighter.angle -= 0.1f;
         if (fighter.angle < 0) fighter.angle += 1;
         if (fighter.angle > 1) fighter.angle = fighter.angle % 1;
     }
 
     public void setVelocity(int playerId, float velocity) {
-        if (velocity > 1f) velocity = 1f;
-        if (velocity < 0f) velocity = 0f;
-        fighters[playerId].velocity = velocity * 5;
+        velocity = (velocity + 1f) / 2f;
+        fighters[playerId].velocity = velocity * 4;
     }
 
     public void shoot(int playerId) {
@@ -96,7 +93,7 @@ public class Game {
         if (player.canShoot()) {
             player.shooted();
             shootBullet(playerId);
-            System.out.println("Player: " + playerId + " shoots");
+            //System.out.println("Player: " + playerId + " shoots");
         }
 
     }
@@ -116,11 +113,5 @@ public class Game {
         return numberOfAlive < 2;
     }
 
-    public float getFitness(int playerId) {
-        Fighter fighter = fighters[playerId];
-        float fitness = 0;
-        fitness += fighter.hp + fighter.killedTimes;
-        return fitness;
-    }
 
 }
