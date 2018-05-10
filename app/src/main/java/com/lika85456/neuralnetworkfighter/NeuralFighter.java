@@ -12,7 +12,7 @@ public class NeuralFighter extends NeuralNetwork implements Comparable {
 
 
     public NeuralFighter(Fighter fighter) {
-        super(7, 5, 5, 20);
+        super(7, 5, 5, 10);
         this.fighter = fighter;
     }
 
@@ -36,7 +36,7 @@ public class NeuralFighter extends NeuralNetwork implements Comparable {
     }
 
     public int getFitness() {
-        return (int) (fighter.hp * 10) + fighter.shootWhileSeeingEnemy + fighter.hitEnemy * 5;
+        return (int) (fighter.hp * 100) + fighter.shootWhileSeeingEnemy + fighter.hitEnemy * 50;
     }
 
     @Override

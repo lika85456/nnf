@@ -54,7 +54,7 @@ public class MySurfaceView extends View {
         new Thread(new Runnable() {
             public void run() {
                 Trainer trainer = new Trainer();
-                theBest = trainer.train(500);
+                theBest = trainer.train(1000);
             }
         }).start();
 
@@ -75,8 +75,8 @@ public class MySurfaceView extends View {
         invalidate();
         if (theBest == null) return;
         if (game == null) {
-            game = new Game(10);
-            for (int i = 0; i < 10; i++) {
+            game = new Game(3);
+            for (int i = 0; i < 3; i++) {
                 NeuralFighter temp = theBest.mutate(0.1f);
                 temp.fighter = game.fighters[i];
                 neuralNetworks.add(temp);
@@ -85,7 +85,8 @@ public class MySurfaceView extends View {
         } else {
             if (!game.isEnd()) {
                 for (NeuralFighter neuralFighter : neuralNetworks) {
-                    neuralFighter.play(game);
+                    if (neuralFighter.fighter.dead == false)
+                        neuralFighter.play(game);
                 }
                 game.nextTurn();
             } else {
@@ -94,8 +95,8 @@ public class MySurfaceView extends View {
             }
 
         }
-
-        render(canvas);
+        if (game != null && game.fighters != null)
+            render(canvas);
     }
 
     public void render(Canvas canvas) {
